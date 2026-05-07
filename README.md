@@ -1,155 +1,246 @@
 # 📊 ConcallIQ — Earnings Call Intelligence Platform
 
-> **RAG-powered Q&A on concall PDFs + Live News & Reddit Sentiment Analysis**
+<div align="center">
 
-Built with: `Streamlit` · `LangChain` · `ChromaDB` · `OpenAI GPT-4o` · `NewsAPI` · `PRAW (Reddit)`
+![Python](https://img.shields.io/badge/Python-3.11-blue?style=for-the-badge&logo=python)
+![Streamlit](https://img.shields.io/badge/Streamlit-1.32-red?style=for-the-badge&logo=streamlit)
+![LangChain](https://img.shields.io/badge/LangChain-0.2-green?style=for-the-badge)
+![ChromaDB](https://img.shields.io/badge/ChromaDB-Local-orange?style=for-the-badge)
+![License](https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge)
+
+**Ask questions about any earnings call transcript using RAG + LLM. Get live news and Reddit sentiment. Built for analysts, by a developer.**
+
+[Features](#-features) • [Demo](#-demo) • [Tech Stack](#-tech-stack) • [Setup](#-quick-start) • [Usage](#-usage)
+
+</div>
 
 ---
 
-## 🚀 Quick Start (5 Minutes)
+## 🚀 What is ConcallIQ?
 
-### Step 1: Clone the project
-```bash
-git clone <your-repo-url>
-cd ConcallIQ
+ConcallIQ is an AI-powered earnings call analysis tool that lets you:
+
+- 📄 **Upload any concall PDF** and instantly ask questions about it
+- 🤖 **Get precise, cited answers** grounded in the actual transcript — no hallucinations
+- 📰 **Fetch live news sentiment** about any stock using NewsAPI + LLM scoring
+- 🟠 **Analyze Reddit sentiment** from finance communities
+- 📊 **Compare multiple companies** side by side
+
+> This is the kind of tool used by hedge funds and trading firms — built from scratch with open-source tools and free APIs.
+
+---
+
+## ✨ Features
+
+| Feature | Description | Tech |
+|--------|-------------|------|
+| 📤 PDF Upload & Index | Upload concall transcripts, auto-chunked and embedded | PyPDF2 + pdfplumber |
+| 💬 RAG Q&A | Ask natural language questions, get cited answers | LangChain + ChromaDB + Groq |
+| 📋 Auto Summary | One-click comprehensive concall summary | LLaMA3 70B |
+| 📰 News Sentiment | Live news fetched and scored -1 to +1 | NewsAPI + LLM |
+| 🟠 Reddit Sentiment | Finance subreddit sentiment analysis | PRAW (Free) |
+| 📊 Multi-Company Compare | Ask same question across multiple concalls | Multi-doc RAG |
+| 📈 Sentiment Charts | Visual gauge charts for sentiment scores | Plotly |
+
+---
+
+## 🏗️ How It Works
+
+```
+User uploads Concall PDF/Transcript
+            ↓
+RAG chunks + indexes it (ChromaDB + Local Embeddings)
+            ↓
+User asks → "What did CEO say about margins?"
+            ↓
+RAG retrieves relevant chunks → LLM answers with citations
+            +
+OpenAI fetches latest news sentiment
+            +
+Reddit community sentiment (PRAW)
+            ↓
+Final Answer = Concall Insight + Market Sentiment
 ```
 
-### Step 2: Create a virtual environment
-```bash
-python -m venv venv
+---
 
-# Activate it:
-# macOS/Linux:
-source venv/bin/activate
-# Windows:
-venv\Scripts\activate
-```
+## 🛠️ Tech Stack
 
-### Step 3: Install dependencies
-```bash
-pip install -r requirements.txt
 ```
-
-### Step 4: Set up API keys
-Copy the `.env` file and fill in your keys:
-```bash
-cp .env .env.local   # or just edit .env directly
+Frontend          →  Streamlit
+RAG Framework     →  LangChain
+Vector Store      →  ChromaDB (local, free)
+LLM               →  Groq (LLaMA3 70B / Mixtral) — Free tier
+Embeddings        →  all-MiniLM-L6-v2 (local, free)
+PDF Parser        →  pdfplumber / PyPDF2
+News Sentiment    →  NewsAPI + Groq LLM
+Social Sentiment  →  PRAW Reddit — Free
+Visualization     →  Plotly
 ```
-
-Edit `.env`:
-```
-OPENAI_API_KEY=sk-...           # Required — get at platform.openai.com
-NEWS_API_KEY=your_key_here      # Free — get at newsapi.org/register
-REDDIT_CLIENT_ID=...            # Optional — for Reddit sentiment
-REDDIT_CLIENT_SECRET=...        # Optional
-```
-
-**Getting your free API keys:**
-| API | Cost | Link |
-|-----|------|------|
-| OpenAI | ~$2-5 for demo | [platform.openai.com](https://platform.openai.com/api-keys) |
-| NewsAPI | 100 req/day FREE | [newsapi.org/register](https://newsapi.org/register) |
-| Reddit (PRAW) | 100% FREE | [reddit.com/prefs/apps](https://www.reddit.com/prefs/apps) |
-| ChromaDB | 100% FREE local | No key needed |
-
-### Step 5: Run the app
-```bash
-streamlit run app.py
-```
-Open http://localhost:8501 in your browser 🎉
 
 ---
 
 ## 📁 Project Structure
+
 ```
 ConcallIQ/
 │
 ├── src/
 │   ├── ingestion/
-│   │   ├── pdf_loader.py      # Load & parse concall PDFs
-│   │   └── chunker.py         # Smart text chunking
+│   │   ├── pdf_loader.py       # Load & parse concall PDFs
+│   │   └── chunker.py          # Smart text chunking with overlap
 │   │
 │   ├── rag/
-│   │   ├── embeddings.py      # OpenAI embeddings
-│   │   ├── vector_store.py    # ChromaDB setup
-│   │   └── retriever.py       # RAG pipeline (GPT-4o)
+│   │   ├── embeddings.py       # Local HuggingFace embeddings
+│   │   ├── vector_store.py     # ChromaDB setup & retrieval
+│   │   └── retriever.py        # Full RAG pipeline
 │   │
 │   ├── sentiment/
-│   │   ├── news_sentiment.py  # NewsAPI + OpenAI
+│   │   ├── news_sentiment.py   # NewsAPI + LLM scoring
 │   │   └── reddit_sentiment.py # PRAW Reddit scraper
 │   │
 │   └── utils/
 │       ├── logger.py
 │       └── exception.py
 │
-├── data/
-│   └── concalls/              # Store uploaded PDFs
-│
-├── app.py                     # Streamlit app
+├── data/concalls/              # Store uploaded PDFs
+├── app.py                      # Streamlit UI (4 tabs)
 ├── requirements.txt
-├── .env                       # API keys (never commit this!)
-├── .gitignore
+├── .env                        # API keys (never commit!)
 └── README.md
 ```
 
 ---
 
-## 🎯 Features
+## ⚡ Quick Start
 
-### Tab 1: Upload & Index
-- Upload any earnings call PDF/transcript
-- Automatic text extraction (pdfplumber + PyPDF2 fallback)
-- Smart chunking with overlap for better retrieval
-- Persistent ChromaDB storage (survives restarts)
-
-### Tab 2: Q&A
-- Ask natural language questions about concalls
-- GPT-4o powered answers grounded in actual transcript
-- Source citations with page numbers
-- Pre-built question templates
-- Auto-summary generation
-
-### Tab 3: Sentiment
-- Live news sentiment via NewsAPI + GPT scoring
-- Reddit sentiment via PRAW (finance subreddits)
-- Visual gauge charts
-- Sentiment score: -1 (Bearish) to +1 (Bullish)
-
-### Tab 4: Compare
-- Multi-company Q&A comparison
-- Cross-company sentiment charts
-
----
-
-## 💰 Estimated Costs
-
-| Operation | Model | Cost |
-|-----------|-------|------|
-| Index 50-page PDF | text-embedding-3-small | ~$0.002 |
-| Ask a question | GPT-4o | ~$0.01 |
-| Ask a question | GPT-4o-mini | ~$0.001 |
-| Sentiment analysis | GPT-4o-mini | ~$0.002 |
-
-**Total for demo: ~$2-5**
-
----
-
-## 🐳 Docker (Optional)
+### 1. Clone the repo
 ```bash
-docker build -t concalliq .
-docker run -p 8501:8501 --env-file .env concalliq
+git clone https://github.com/YOUR_USERNAME/ConcallIQ.git
+cd ConcallIQ
 ```
 
+### 2. Create virtual environment
+```bash
+python -m venv venv
+source venv/bin/activate        # macOS/Linux
+venv\Scripts\activate           # Windows
+```
+
+### 3. Install dependencies
+```bash
+pip install -r requirements.txt
+```
+
+### 4. Set up API keys
+Create a `.env` file:
+```env
+OPENAI_API_KEY=your_groq_key_here        # Get free at console.groq.com
+NEWS_API_KEY=your_newsapi_key_here       # Get free at newsapi.org
+OPENAI_BASE_URL=https://api.groq.com/openai/v1
+
+# Optional — Reddit sentiment
+REDDIT_CLIENT_ID=your_reddit_client_id
+REDDIT_CLIENT_SECRET=your_reddit_secret
+REDDIT_USER_AGENT=ConcallIQ/1.0 by u/yourusername
+```
+
+### 5. Run the app
+```bash
+streamlit run app.py
+```
+Open **http://localhost:8501** 🎉
+
 ---
 
-## 📝 Usage Tips
+## 🔑 API Keys (All Free!)
 
-1. **Best PDFs**: Official concall transcripts from company investor relations pages, BSE/NSE filings, or Seeking Alpha transcripts
-2. **Company names**: Use consistent names (e.g., always "Infosys" not "Infosys Ltd" sometimes)
-3. **Questions**: Be specific — "What was Q3 FY24 revenue?" works better than "How did they do?"
-4. **Model**: Use `gpt-4o-mini` during testing to save costs, switch to `gpt-4o` for production quality
+| Service | Cost | Link | Used For |
+|---------|------|------|----------|
+| Groq | ✅ Free | [console.groq.com](https://console.groq.com) | LLM inference |
+| NewsAPI | ✅ Free (100 req/day) | [newsapi.org](https://newsapi.org/register) | Live news |
+| Reddit PRAW | ✅ Free | [reddit.com/prefs/apps](https://www.reddit.com/prefs/apps) | Social sentiment |
+| ChromaDB | ✅ Free (local) | Built-in | Vector storage |
+| HuggingFace Embeddings | ✅ Free (local) | Built-in | Text embeddings |
+
+**Total cost to run: $0** 🎉
+
+---
+
+## 📖 Usage Guide
+
+### Upload & Index a Concall
+1. Go to **Upload & Index** tab
+2. Upload a concall PDF (BSE/NSE filings, investor relations pages)
+3. Enter the company name (e.g. `Infosys`)
+4. Click **🚀 Index Concall** — done in ~30 seconds
+
+### Ask Questions
+1. Go to **Q&A** tab
+2. Select company or ask across all
+3. Use preset questions or type your own:
+   - *"What was Q3 revenue growth?"*
+   - *"What did the CEO say about AI investments?"*
+   - *"What are the key risks for next quarter?"*
+
+### Get Sentiment
+1. Go to **Sentiment** tab
+2. Type any company/stock name
+3. Get live news + Reddit sentiment scores with visual gauges
+
+### Where to find Concall PDFs
+- **BSE India** → [bseindia.com](https://bseindia.com) → Search company → Announcements
+- **NSE** → [nseindia.com](https://nseindia.com) → Company page → Transcripts  
+- Company investor relations pages
+
+---
+
+## 🤖 Supported LLM Models (via Groq — Free)
+
+| Model | Speed | Best For |
+|-------|-------|----------|
+| `llama3-8b-8192` | ⚡ Fastest | Quick Q&A |
+| `llama3-70b-8192` | 🎯 Best quality | Detailed analysis |
+| `mixtral-8x7b-32768` | ⚡ Fast | Long transcripts (32K context) |
+| `gemma2-9b-it` | ⚡ Fast | Balanced performance |
+
+---
+
+## 🙋 FAQ
+
+**Q: Does it work with Hindi/regional language concalls?**  
+A: It works best with English transcripts. Mixed language may reduce accuracy.
+
+**Q: How many PDFs can I index?**  
+A: Unlimited — ChromaDB is local and only limited by your disk space.
+
+**Q: Is my data sent to any server?**  
+A: PDF text is sent to Groq for LLM inference. ChromaDB and embeddings run 100% locally.
+
+**Q: Can I use OpenAI instead of Groq?**  
+A: Yes — set `OPENAI_BASE_URL` to `https://api.openai.com/v1` and use `gpt-4o` as the model.
 
 ---
 
 ## ⚠️ Disclaimer
-This tool is for educational and research purposes only. Not financial advice.
+
+This tool is for **educational and research purposes only**.  
+It is **not financial advice**. Always do your own research before making investment decisions.
+
+---
+
+## 🤝 Contributing
+
+Pull requests are welcome! For major changes, please open an issue first.
+
+1. Fork the repo
+2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
+
+---
+
+<div align="center">
+Built with ❤️ using Streamlit, LangChain, and Groq
+</div>
