@@ -1,0 +1,16 @@
+.env
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+data/chromadb/
+data/concalls/
+logs/
+*.egg-info/
+dist/
+build/
+.venv/
+venv/
+node_modules/
+concalliqvenv/
+.DS_Store
