@@ -359,20 +359,24 @@ with tab2:
                             k=k_chunks,
                             model=model_choice,
                         )
-
-                        st.markdown("### 🤖 Answer")
-                        st.markdown(f'<div class="answer-box">{result["answer"]}</div>', unsafe_allow_html=True)
-
-                        if result["sources"]:
-                            st.markdown("**📎 Sources:**")
-                            source_html = " ".join(
-                                f'<span class="source-chip">📄 {s["source"]} (p.{s["page"]})</span>'
-                                for s in result["sources"]
-                            )
-                            st.markdown(source_html, unsafe_allow_html=True)
-
+                        st.session_state["last_answer"] = result["answer"]       # ✅ just save
+                        st.session_state["last_sources"] = result.get("sources", [])  # ✅ just save
                     except Exception as e:
                         st.error(f"❌ Error: {str(e)}")
+
+        # ✅ This is OUTSIDE the button block — paste this right after the block above
+        if "last_answer" in st.session_state:
+            st.markdown("### 🤖 Answer")
+            st.markdown(f'<div class="answer-box">{st.session_state["last_answer"]}</div>', unsafe_allow_html=True)
+
+            if st.session_state["last_sources"]:
+                st.markdown("**📎 Sources:**")
+                source_html = " ".join(
+                    f'<span class="source-chip">📄 {s["source"]} (p.{s["page"]})</span>'
+                    for s in st.session_state["last_sources"]
+                )
+                st.markdown(source_html, unsafe_allow_html=True)
+
 
         st.divider()
 
