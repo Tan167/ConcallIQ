@@ -27,7 +27,7 @@ Guidelines:
 """
 
 
-def get_llm(model: str = "llama3-8b-8192") -> ChatOpenAI:
+def get_llm(model: str = "llama-3.1-8b-instant") -> ChatOpenAI:
     api_key = os.getenv("OPENAI_API_KEY")
     base_url = os.getenv("OPENAI_BASE_URL", "https://api.groq.com/openai/v1")
     return ChatOpenAI(
@@ -54,7 +54,7 @@ def answer_question(
     question: str,
     company: str = "",
     k: int = 6,
-    model: str = "llama3-8b-8192",
+    model: str = "llama-3.1-8b-instant",
 ) -> Dict[str, Any]:
     """
     Full RAG pipeline: retrieve → augment → generate.

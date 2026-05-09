@@ -98,7 +98,7 @@ def analyze_news_sentiment(company: str, days_back: int = 7) -> Dict[str, Any]:
         raise SentimentError("OPENAI_API_KEY not set.")
 
     llm = ChatOpenAI(
-    model="llama3-8b-8192",
+    model="llama-3.1-8b-instant",
     temperature=0,
     openai_api_key=os.getenv("OPENAI_API_KEY"),
     openai_api_base=os.getenv("OPENAI_BASE_URL", "https://api.groq.com/openai/v1"),

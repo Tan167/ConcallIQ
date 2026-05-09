@@ -218,13 +218,13 @@ with st.sidebar:
     st.divider()
 
     st.markdown("### 🤖 Model")
-    model_choice = st.selectbox(
+    # NEW - working
+model_choice = st.selectbox(
     "LLM",
     [
-        "llama3-8b-8192",
-        "llama3-70b-8192",
-        "mixtral-8x7b-32768",
-        "gemma2-9b-it",
+        "llama-3.1-8b-instant",
+        "llama-3.3-70b-versatile",
+        "moonshotai/kimi-k2-instruct",
     ],
     help="Free models via Groq"
 )
@@ -327,19 +327,25 @@ with tab2:
             "What were the analyst concerns?",
             "How is headcount changing?",
         ]
-        selected_preset = None
+        # NEW - fixed
+        if "qa_question" not in st.session_state:
+            st.session_state.qa_question = ""
+
         for i, q in enumerate(preset_questions):
             if preset_cols[i % 3].button(q, key=f"preset_{i}", use_container_width=True):
-                selected_preset = q
-
-        st.divider()
+                st.session_state.qa_question = q
 
         question = st.text_input(
             "Your Question",
-            value=selected_preset or "",
+            value=st.session_state.qa_question,
             placeholder="What did management say about AI investments?",
+            key="qa_input",
         )
+        st.session_state.qa_question = question
 
+        st.divider()
+
+       
         if st.button("🔍 Ask ConcallIQ", use_container_width=True) and question:
             if not openai_key:
                 st.error("❌ OpenAI API key required.")
