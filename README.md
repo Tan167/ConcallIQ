@@ -226,18 +226,6 @@ It is **not financial advice**. Always do your own research before making invest
 
 ---
 
-## 🤝 Contributing
-
-Pull requests are welcome! For major changes, please open an issue first.
-
-1. Fork the repo
-2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
-
----
-
 <div align="center">
 Built with ❤️ using Streamlit, LangChain, and Groq
 </div>
