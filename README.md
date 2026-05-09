@@ -8,7 +8,7 @@
 ![ChromaDB](https://img.shields.io/badge/ChromaDB-Local-orange?style=for-the-badge)
 ![License](https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge)
 
-**Ask questions about any earnings call transcript using RAG + LLM. Get live news and Reddit sentiment. Built for analysts, by a developer.**
+**Ask questions about any earnings call transcript using RAG + LLM. Get live news and StockTwits sentiment. Built for analysts, by a developer.**
 
 [Features](#-features) • [Demo](#-demo) • [Tech Stack](#-tech-stack) • [Setup](#-quick-start) • [Usage](#-usage)
 
@@ -22,8 +22,8 @@ ConcallIQ is an AI-powered earnings call analysis tool that lets you:
 
 - 📄 **Upload any concall PDF** and instantly ask questions about it
 - 🤖 **Get precise, cited answers** grounded in the actual transcript — no hallucinations
-- 📰 **Fetch live news sentiment** about any stock using NewsAPI + LLM scoring
-- 🟠 **Analyze Reddit sentiment** from finance communities
+- 📰 **Fetch live news sentiment** about any stock using NewsData.io + LLM scoring
+- 📈 **Analyze retail investor sentiment** from StockTwits (no API key needed)
 - 📊 **Compare multiple companies** side by side
 
 > This is the kind of tool used by hedge funds and trading firms — built from scratch with open-source tools and free APIs.
@@ -37,8 +37,8 @@ ConcallIQ is an AI-powered earnings call analysis tool that lets you:
 | 📤 PDF Upload & Index | Upload concall transcripts, auto-chunked and embedded | PyPDF2 + pdfplumber |
 | 💬 RAG Q&A | Ask natural language questions, get cited answers | LangChain + ChromaDB + Groq |
 | 📋 Auto Summary | One-click comprehensive concall summary | LLaMA3 70B |
-| 📰 News Sentiment | Live news fetched and scored -1 to +1 | NewsAPI + LLM |
-| 🟠 Reddit Sentiment | Finance subreddit sentiment analysis | PRAW (Free) |
+| 📰 News Sentiment | Live news fetched and scored -1 to +1 | NewsData.io + LLM |
+| 📈 StockTwits Sentiment | Retail investor bullish/bearish sentiment | StockTwits API (Free) |
 | 📊 Multi-Company Compare | Ask same question across multiple concalls | Multi-doc RAG |
 | 📈 Sentiment Charts | Visual gauge charts for sentiment scores | Plotly |
 
@@ -55,9 +55,9 @@ User asks → "What did CEO say about margins?"
             ↓
 RAG retrieves relevant chunks → LLM answers with citations
             +
-OpenAI fetches latest news sentiment
+NewsData.io fetches latest Indian & global news sentiment
             +
-Reddit community sentiment (PRAW)
+StockTwits retail investor sentiment (bullish/bearish)
             ↓
 Final Answer = Concall Insight + Market Sentiment
 ```
@@ -73,8 +73,8 @@ Vector Store      →  ChromaDB (local, free)
 LLM               →  Groq (LLaMA3 70B / Mixtral) — Free tier
 Embeddings        →  all-MiniLM-L6-v2 (local, free)
 PDF Parser        →  pdfplumber / PyPDF2
-News Sentiment    →  NewsAPI + Groq LLM
-Social Sentiment  →  PRAW Reddit — Free
+News Sentiment    →  NewsData.io + Groq LLM
+Social Sentiment  →  StockTwits — Free, no API key needed
 Visualization     →  Plotly
 ```
 
@@ -96,8 +96,8 @@ ConcallIQ/
 │   │   └── retriever.py        # Full RAG pipeline
 │   │
 │   ├── sentiment/
-│   │   ├── news_sentiment.py   # NewsAPI + LLM scoring
-│   │   └── reddit_sentiment.py # PRAW Reddit scraper
+│   │   ├── news_sentiment.py   # NewsData.io + LLM scoring
+│   │   └── reddit_sentiment.py # StockTwits retail sentiment
 │   │
 │   └── utils/
 │       ├── logger.py
@@ -135,14 +135,11 @@ pip install -r requirements.txt
 ### 4. Set up API keys
 Create a `.env` file:
 ```env
-OPENAI_API_KEY=your_groq_key_here        # Get free at console.groq.com
-NEWS_API_KEY=your_newsapi_key_here       # Get free at newsapi.org
+OPENAI_API_KEY=your_groq_key_here           # Get free at console.groq.com
+NEWSDATA_API_KEY=your_newsdata_key_here     # Get free at newsdata.io
 OPENAI_BASE_URL=https://api.groq.com/openai/v1
 
-# Optional — Reddit sentiment
-REDDIT_CLIENT_ID=your_reddit_client_id
-REDDIT_CLIENT_SECRET=your_reddit_secret
-REDDIT_USER_AGENT=ConcallIQ/1.0 by u/yourusername
+# StockTwits — no API key needed!
 ```
 
 ### 5. Run the app
@@ -158,8 +155,8 @@ Open **http://localhost:8501** 🎉
 | Service | Cost | Link | Used For |
 |---------|------|------|----------|
 | Groq | ✅ Free | [console.groq.com](https://console.groq.com) | LLM inference |
-| NewsAPI | ✅ Free (100 req/day) | [newsapi.org](https://newsapi.org/register) | Live news |
-| Reddit PRAW | ✅ Free | [reddit.com/prefs/apps](https://www.reddit.com/prefs/apps) | Social sentiment |
+| NewsData.io | ✅ Free (200 req/day) | [newsdata.io](https://newsdata.io) | Live Indian & global news |
+| StockTwits | ✅ Free (no key needed) | [stocktwits.com](https://stocktwits.com) | Retail investor sentiment |
 | ChromaDB | ✅ Free (local) | Built-in | Vector storage |
 | HuggingFace Embeddings | ✅ Free (local) | Built-in | Text embeddings |
 
@@ -185,8 +182,8 @@ Open **http://localhost:8501** 🎉
 
 ### Get Sentiment
 1. Go to **Sentiment** tab
-2. Type any company/stock name
-3. Get live news + Reddit sentiment scores with visual gauges
+2. Type any company/stock name or NSE ticker (e.g. `Netweb` or `NETWEB`)
+3. Get live news + StockTwits retail sentiment scores with visual gauges
 
 ### Where to find Concall PDFs
 - **BSE India** → [bseindia.com](https://bseindia.com) → Search company → Announcements
