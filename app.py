@@ -468,7 +468,7 @@ with tab3:
 
             # Reddit Sentiment
             with col_reddit:
-                st.markdown("### 🟠 Reddit Sentiment")
+                st.markdown("### 🟠 StockTwits Sentiment")
                 with st.spinner("Analyzing Reddit..."):
                     try:
                         reddit_result = analyze_reddit_sentiment(sentiment_company)

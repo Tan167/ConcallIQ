@@ -1,92 +1,102 @@
 """
-Reddit Sentiment — scrapes relevant subreddits via PRAW (100% Free).
+StockTwits Sentiment — fetches retail investor sentiment (100% Free, no API key needed).
 """
 
-import os
 from typing import List, Dict, Any
+import requests
 
-from src.utils import get_logger, SentimentError
+from src.utils import get_logger
 
 logger = get_logger(__name__)
 
-FINANCE_SUBS = ["investing", "stocks", "IndianStockMarket", "SecurityAnalysis", "ValueInvesting"]
 
-
-def fetch_reddit_posts(company: str, limit: int = 20) -> List[Dict]:
+def company_to_symbol(company: str) -> str:
     """
-    Fetch recent Reddit posts mentioning the company.
-    Returns empty list if PRAW credentials not configured.
+    Clean and convert company name/input to StockTwits symbol.
+    No yfinance — just clean the input directly.
     """
-    client_id = os.getenv("REDDIT_CLIENT_ID")
-    client_secret = os.getenv("REDDIT_CLIENT_SECRET")
-    user_agent = os.getenv("REDDIT_USER_AGENT", "ConcallIQ/1.0")
+    clean = company.upper().strip()
+    clean = clean.replace(".NSE", "").replace(".BSE", "").replace(".NS", "").replace(" ", "")
+    return clean
 
-    if not client_id or not client_secret:
-        logger.warning("Reddit credentials not set — skipping social sentiment.")
-        return []
 
-    try:
-        import praw
-        reddit = praw.Reddit(
-            client_id=client_id,
-            client_secret=client_secret,
-            user_agent=user_agent,
-        )
+def fetch_stocktwits_posts(company: str, limit: int = 30) -> List[Dict]:
+    """
+    Fetch recent StockTwits messages for a company.
+    No API key required.
+    Tries SYMBOL.NSE first (Indian stocks), then plain SYMBOL (US stocks).
+    """
+    symbol = company_to_symbol(company)
 
-        posts = []
-        for sub_name in FINANCE_SUBS:
-            subreddit = reddit.subreddit(sub_name)
-            for post in subreddit.search(company, limit=limit // len(FINANCE_SUBS), sort="new"):
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
+    }
+
+    for ticker in [f"{symbol}.NSE", symbol]:
+        url = f"https://api.stocktwits.com/api/2/streams/symbol/{ticker}.json"
+        try:
+            resp = requests.get(url, headers=headers, timeout=10)
+
+            if resp.status_code in [403, 404]:
+                logger.warning(f"StockTwits: {resp.status_code} for '{ticker}', trying next format...")
+                continue
+
+            resp.raise_for_status()
+            data = resp.json()
+
+            posts = []
+            for msg in data.get("messages", [])[:limit]:
+                sentiment = None
+                if msg.get("entities", {}).get("sentiment"):
+                    sentiment = msg["entities"]["sentiment"].get("basic")
+
                 posts.append({
-                    "subreddit": sub_name,
-                    "title": post.title,
-                    "score": post.score,
-                    "upvote_ratio": post.upvote_ratio,
-                    "num_comments": post.num_comments,
-                    "url": f"https://reddit.com{post.permalink}",
-                    "selftext": post.selftext[:300],
+                    "id": msg.get("id"),
+                    "body": msg.get("body", "")[:200],
+                    "sentiment": sentiment,
+                    "likes": msg.get("likes", {}).get("total", 0),
+                    "created_at": msg.get("created_at", ""),
+                    "username": msg.get("user", {}).get("username", "unknown"),
+                    "subreddit": "StockTwits",
+                    "title": msg.get("body", "")[:100],
+                    "score": msg.get("likes", {}).get("total", 0),
+                    "num_comments": 0,
                 })
 
-        logger.info(f"Fetched {len(posts)} Reddit posts for '{company}'")
-        return posts
+            if posts:
+                logger.info(f"Fetched {len(posts)} StockTwits messages for '{ticker}'")
+                return posts
 
-    except Exception as e:
-        logger.error(f"Reddit fetch error: {e}")
-        return []
+        except Exception as e:
+            logger.error(f"StockTwits fetch error for {ticker}: {e}")
+            continue
+
+    return []
 
 
 def analyze_reddit_sentiment(company: str) -> Dict[str, Any]:
     """
-    Analyze Reddit sentiment for a company.
-
-    Returns:
-        Dict with score, label, summary, and posts.
+    Analyze StockTwits sentiment for a company.
+    Function name kept as analyze_reddit_sentiment for app.py compatibility.
     """
-    posts = fetch_reddit_posts(company)
+    posts = fetch_stocktwits_posts(company)
 
     if not posts:
         return {
             "score": 0.0,
             "label": "No Data",
-            "summary": "Reddit credentials not configured or no posts found.",
+            "summary": f"No StockTwits data found for '{company}'. Try using the exact NSE ticker e.g. NETWEB, INFY, TCS.",
             "posts": [],
             "post_count": 0,
         }
 
-    # Simple heuristic: weighted by upvote ratio
-    total_weight = 0.0
-    weighted_score = 0.0
+    # Use StockTwits built-in bullish/bearish tags for scoring
+    bullish = sum(1 for p in posts if p["sentiment"] == "Bullish")
+    bearish = sum(1 for p in posts if p["sentiment"] == "Bearish")
+    total_tagged = bullish + bearish
 
-    for post in posts:
-        weight = max(1, post.get("score", 1))
-        ratio = post.get("upvote_ratio", 0.5)
-        # Map upvote_ratio [0,1] to sentiment [-1, 1]
-        sentiment = (ratio - 0.5) * 2
-        weighted_score += sentiment * weight
-        total_weight += weight
-
-    if total_weight > 0:
-        score = round(weighted_score / total_weight, 3)
+    if total_tagged > 0:
+        score = round((bullish - bearish) / total_tagged, 3)
     else:
         score = 0.0
 
@@ -103,15 +113,17 @@ def analyze_reddit_sentiment(company: str) -> Dict[str, Any]:
     else:
         label = "Neutral"
 
+    symbol = company_to_symbol(company)
     summary = (
-        f"Analyzed {len(posts)} Reddit posts across finance subreddits. "
-        f"Community sentiment appears {label.lower()} with a score of {score:.2f}."
+        f"Analyzed {len(posts)} StockTwits messages for ${symbol}. "
+        f"{bullish} bullish 📈 vs {bearish} bearish 📉 tagged posts. "
+        f"Retail sentiment is {label.lower()} (score: {score:.2f})."
     )
 
     return {
         "score": score,
         "label": label,
         "summary": summary,
-        "posts": posts[:10],  # Return top 10
+        "posts": posts[:10],
         "post_count": len(posts),
     }

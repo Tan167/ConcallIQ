@@ -27,21 +27,19 @@ def fetch_news(company: str, days_back: int = 7, max_articles: int = 10) -> List
     Returns:
         List of article dicts.
     """
-    api_key = os.getenv("NEWS_API_KEY")
+    api_key = os.getenv("NEWSDATA_API_KEY")
     if not api_key:
-        logger.warning("NEWS_API_KEY not set — returning empty news.")
+        logger.warning("NEWSDATA_API_KEY not set — returning empty news.")
         return []
 
-    from_date = (datetime.now() - timedelta(days=days_back)).strftime("%Y-%m-%d")
 
-    url = "https://newsapi.org/v2/everything"
+    url = "https://newsdata.io/api/1/news"
     params = {
-        "q": f"{company} stock earnings",
-        "from": from_date,
-        "sortBy": "relevancy",
+        "apikey": api_key,
+        "q": company,
         "language": "en",
-        "pageSize": max_articles,
-        "apiKey": api_key,
+        "country": "in",
+        "size": max_articles,
     }
 
     try:
@@ -50,7 +48,7 @@ def fetch_news(company: str, days_back: int = 7, max_articles: int = 10) -> List
         data = resp.json()
 
         articles = []
-        for art in data.get("articles", []):
+        for art in data.get("results", []):
             if not art.get("title") or "[Removed]" in art.get("title", ""):
                 continue
             articles.append({
