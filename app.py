@@ -556,14 +556,21 @@ with tab4:
         st.divider()
 
         # Sentiment comparison chart
+        # Sentiment comparison chart
         st.markdown("### 📈 Sentiment Comparison")
-        if st.button("📊 Compare News Sentiment", use_container_width=True) and companies:
+        sentiment_selected = st.multiselect(
+            "Select Companies for Sentiment Comparison",
+            companies,
+            default=companies[:min(3, len(companies))],
+            key="sentiment_compare_select"
+        )
+        if st.button("📊 Compare News Sentiment", use_container_width=True) and sentiment_selected:
             if not openai_key:
                 st.error("❌ OpenAI key required.")
             else:
                 sentiment_data = []
                 progress = st.progress(0)
-                for i, comp in enumerate(companies):
+                for i, comp in enumerate(sentiment_selected):
                     with st.spinner(f"Analyzing {comp}..."):
                         try:
                             result = analyze_news_sentiment(comp, days_back=20)
