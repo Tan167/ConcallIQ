@@ -1,65 +1,95 @@
-import { UploadCloud, MessageSquare, TrendingUp, BarChart2, Activity } from "lucide-react"
+import { UploadCloud, MessageSquare, TrendingUp, BarChart2, Activity, Circle } from "lucide-react"
 
 const nav = [
-  { id: "upload", label: "Upload & Index", icon: UploadCloud },
-  { id: "qa", label: "Q&A Terminal", icon: MessageSquare },
-  { id: "sentiment", label: "Sentiment", icon: TrendingUp },
-  { id: "compare", label: "Compare", icon: BarChart2 },
+  { id: "upload", label: "Upload & Index", icon: UploadCloud, shortcut: "F1" },
+  { id: "qa", label: "Q&A Terminal", icon: MessageSquare, shortcut: "F2" },
+  { id: "sentiment", label: "Sentiment", icon: TrendingUp, shortcut: "F3" },
+  { id: "compare", label: "Compare", icon: BarChart2, shortcut: "F4" },
 ]
 
 export default function Sidebar({ activePage, setActivePage, companies }) {
   return (
-    <div className="w-64 bg-[#0d1117] border-r border-[#1a2332] flex flex-col">
-      
+    <div className="w-56 bg-[#0a0e13] border-r border-[#1e2d3d] flex flex-col shrink-0">
+
       {/* Logo */}
-      <div className="p-6 border-b border-[#1a2332]">
-        <div className="flex items-center gap-2">
-          <Activity className="text-[#f5a623]" size={22} />
-          <span className="text-xl font-semibold tracking-wider">
-            Concall<span className="text-[#f5a623]">IQ</span>
-          </span>
+      <div className="px-5 py-5 border-b border-[#1e2d3d]">
+        <div className="flex items-center gap-2.5">
+          <div className="w-7 h-7 bg-[#f5a623] rounded flex items-center justify-center">
+            <Activity size={14} className="text-[#080c0f]" />
+          </div>
+          <div>
+            <div className="text-[15px] font-bold tracking-wider text-white">
+              Concall<span className="text-[#f5a623]">IQ</span>
+            </div>
+            <div className="text-[9px] text-[#3d5166] tracking-[0.2em] uppercase mt-0.5">
+              Earnings Intelligence
+            </div>
+          </div>
         </div>
-        <p className="text-[#4a5568] text-xs mt-1 tracking-widest uppercase">
-          Earnings Intelligence
-        </p>
       </div>
 
       {/* Nav */}
-      <nav className="flex-1 p-4 space-y-1">
-        {nav.map(({ id, label, icon: Icon }) => (
+      <div className="p-3 space-y-0.5 flex-1">
+        <div className="text-[9px] text-[#3d5166] tracking-[0.2em] uppercase px-3 py-2">
+          Navigation
+        </div>
+        {nav.map(({ id, label, icon: Icon, shortcut }) => (
           <button
             key={id}
             onClick={() => setActivePage(id)}
-            className={`w-full flex items-center gap-3 px-4 py-3 rounded text-sm transition-all duration-200 text-left
+            className={`w-full flex items-center justify-between px-3 py-2.5 rounded text-left transition-all duration-150 group
               ${activePage === id
-                ? "bg-[#f5a623] text-[#080c0f] font-semibold"
-                : "text-[#8a9ab0] hover:bg-[#111820] hover:text-[#f5a623]"
+                ? "bg-[#f5a623] text-[#080c0f]"
+                : "text-[#5a7a94] hover:bg-[#0d1520] hover:text-[#e2e8f0]"
               }`}
           >
-            <Icon size={16} />
-            {label}
+            <div className="flex items-center gap-2.5">
+              <Icon size={14} />
+              <span className="text-[12px] font-semibold tracking-wide">{label}</span>
+            </div>
+            <span className={`text-[9px] tracking-wider font-mono
+              ${activePage === id ? "text-[#80530a]" : "text-[#2a3d4d] group-hover:text-[#3d5166]"}`}>
+              {shortcut}
+            </span>
           </button>
         ))}
-      </nav>
+      </div>
 
       {/* Indexed Companies */}
-      <div className="p-4 border-t border-[#1a2332]">
-        <p className="text-[#4a5568] text-xs uppercase tracking-widest mb-3">
-          Indexed — {companies.length}
-        </p>
-        <div className="space-y-1 max-h-40 overflow-y-auto">
+      <div className="p-3 border-t border-[#1e2d3d]">
+        <div className="text-[9px] text-[#3d5166] tracking-[0.2em] uppercase px-3 py-2 flex items-center justify-between">
+          <span>Indexed</span>
+          <span className="bg-[#0d1520] border border-[#1e2d3d] text-[#f5a623] px-1.5 py-0.5 rounded text-[9px]">
+            {companies.length}
+          </span>
+        </div>
+        <div className="space-y-0.5 max-h-36 overflow-y-auto">
           {companies.length === 0 ? (
-            <p className="text-[#4a5568] text-xs">No concalls yet</p>
+            <p className="text-[#2a3d4d] text-[11px] px-3 py-1">No concalls yet</p>
           ) : (
             companies.map((c) => (
-              <div key={c} className="flex items-center gap-2 text-xs text-[#8a9ab0] py-1">
-                <div className="w-1.5 h-1.5 rounded-full bg-[#f5a623]" />
-                {c}
+              <div key={c} className="flex items-center gap-2 px-3 py-1.5 rounded hover:bg-[#0d1520] transition-all">
+                <div className="w-1.5 h-1.5 rounded-full bg-[#00c97a] shrink-0" />
+                <span className="text-[11px] text-[#5a7a94] truncate">{c}</span>
               </div>
             ))
           )}
         </div>
       </div>
+
+      {/* Footer */}
+      <div className="px-5 py-3 border-t border-[#1e2d3d]">
+        <div className="flex items-center gap-2">
+          <div className="w-6 h-6 rounded bg-[#0d1520] border border-[#1e2d3d] flex items-center justify-center">
+            <span className="text-[9px] text-[#f5a623] font-bold">v2</span>
+          </div>
+          <div>
+            <div className="text-[10px] text-[#3d5166]">UI Redesign</div>
+            <div className="text-[9px] text-[#2a3d4d]">feature/ui-redesign</div>
+          </div>
+        </div>
+      </div>
+
     </div>
   )
 }
