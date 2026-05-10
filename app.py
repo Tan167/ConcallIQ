@@ -558,15 +558,15 @@ with tab4:
         # Sentiment comparison chart
         st.markdown("### 📈 Sentiment Comparison")
         if st.button("📊 Compare News Sentiment", use_container_width=True) and companies:
-            if not openai_key or not news_key:
-                st.error("Both OpenAI and NewsAPI keys required.")
+            if not openai_key:
+                st.error("❌ OpenAI key required.")
             else:
                 sentiment_data = []
                 progress = st.progress(0)
                 for i, comp in enumerate(companies):
                     with st.spinner(f"Analyzing {comp}..."):
                         try:
-                            result = analyze_news_sentiment(comp, days_back=7)
+                            result = analyze_news_sentiment(comp, days_back=20)
                             sentiment_data.append({
                                 "Company": comp,
                                 "Score": result["score"],
