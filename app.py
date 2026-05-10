@@ -224,7 +224,8 @@ model_choice = st.selectbox(
     [
         "llama-3.1-8b-instant",
         "llama-3.3-70b-versatile",
-        "moonshotai/kimi-k2-instruct",
+        "openai/gpt-oss-120b"
+        
     ],
     help="Free models via Groq"
 )
