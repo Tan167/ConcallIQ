@@ -138,3 +138,5 @@ def summarize_concall(company: str, k: int = 15) -> str:
         k=k,
     )
     return result["answer"]
+
+# Need to work on the evaluation of retreiver funtion.
